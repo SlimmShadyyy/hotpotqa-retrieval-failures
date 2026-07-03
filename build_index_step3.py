@@ -1,8 +1,3 @@
-"""
-Step 3: Break down retrieval quality by question type (bridge vs comparison),
-and for partial-hit bridge questions, inspect WHICH gold chunk was missed.
-Builds on Step 2.
-"""
 
 from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
@@ -67,7 +62,6 @@ def gold_coverage(example, retrieved_chunks):
     return len(hit), len(gold_titles), hit, missed
 
 
-# --- Run retrieval once per example, cache results (avoid re-embedding later) ---
 print("Running retrieval over full sample at k=3...")
 results = []  # list of dicts: example, retrieved, hit, missed
 for ex in sample:
@@ -98,7 +92,6 @@ for qtype in ["bridge", "comparison"]:
     print(f"  Partial hit: {partial} ({100*partial/len(subset):.0f}%)")
     print(f"  Zero hit:    {zero_hit} ({100*zero_hit/len(subset):.0f}%)")
 
-# --- Inspect WHICH chunk gets missed, for bridge partial-hit cases ---
 print("\n" + "=" * 80)
 print("BRIDGE QUESTIONS WITH PARTIAL HIT — which chunk got missed? (first 8 examples)")
 print("=" * 80)
@@ -111,7 +104,6 @@ for r in bridge_partial[:8]:
     print(f"Q: {ex['question']}")
     print(f"   Retrieved (hit):    {r['hit_titles']}")
     print(f"   MISSED:             {r['missed_titles']}")
-    # show the score the missed chunk WOULD have gotten, for context
     all_chunks = chunk_example(ex)
     missed_title = list(r['missed_titles'])[0]
     missed_chunk = next((c for c in all_chunks if c["title"] == missed_title), None)
