@@ -1,19 +1,9 @@
-"""
-Step 1: Sample selection + chunking.
-Run this, look at the printed output, make sure it matches what you'd expect
-before we move on to embeddings.
-"""
 
 from datasets import load_dataset
 
 print("Loading HotpotQA (distractor, validation split)...")
 ds = load_dataset("hotpotqa/hotpot_qa", "distractor", split="validation")
 
-# --- Sample selection ---
-# HotpotQA questions come in two types: "bridge" (true multi-hop: fact A leads
-# you to fact B) and "comparison" (compare two known entities). Bridge questions
-# are the cleaner test of "does retrieval fail on multi-step questions", so we
-# oversample bridge but keep some comparison too for contrast.
 N_BRIDGE = 150
 N_COMPARISON = 50
 
@@ -46,11 +36,9 @@ def chunk_example(example):
 
 
 def get_gold_titles(example):
-    """The set of paragraph titles that are actually needed to answer the question."""
     return set(example["supporting_facts"]["title"])
 
 
-# --- Sanity check: run chunking on the first example and inspect ---
 ex0 = sample[0]
 chunks0 = chunk_example(ex0)
 gold0 = get_gold_titles(ex0)
@@ -67,7 +55,6 @@ for c in chunks0:
     print(f"  [{c['chunk_id']}] {c['title']}{is_gold}")
     print(f"      {c['text'][:100]}...")
 
-# --- Chunk the whole sample, report totals ---
 all_chunks_by_example = [chunk_example(ex) for ex in sample]
 total_chunks = sum(len(c) for c in all_chunks_by_example)
 print(f"\nTotal chunks across full sample: {total_chunks}")
