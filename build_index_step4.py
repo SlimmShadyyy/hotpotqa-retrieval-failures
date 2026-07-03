@@ -1,14 +1,3 @@
-"""
-Step 4: Generation + answer quality.
-Builds on Steps 1-3 (chunking, retrieval, bridge/comparison breakdown).
-
-New idea: retrieval quality is only useful insofar as it affects the final
-answer. So for each question, we take the top-k retrieved chunks, concatenate
-them into a context, run an extractive QA model over that context, and score
-the predicted answer against the gold answer (EM / F1, the standard SQuAD
-metrics). Then we check whether answer accuracy tracks gold coverage
-(full hit / partial hit / zero hit) and question type (bridge / comparison).
-"""
 
 import re
 import string
@@ -79,17 +68,7 @@ def gold_coverage(example, retrieved_chunks):
     return len(hit), len(gold_titles), hit, missed
 
 
-# --- New: load a small extractive QA model ---
-# distilbert-base-cased-distilled-squad: fine-tuned on SQuAD, runs fine on CPU.
-# Extractive means it picks a span out of the given context - it can only be
-# as right as the context you feed it, which is exactly what we want to test.
-#
-# Note: we load the tokenizer/model directly instead of using
-# transformers.pipeline("question-answering", ...). As of transformers==5.3,
-# HuggingFace removed the "question-answering" pipeline task shortcut (see
-# https://github.com/huggingface/course/issues/1211). Calling the model
-# directly does the same thing the pipeline did internally, and isn't
-# affected by that change.
+
 print("Loading QA model (distilbert-base-cased-distilled-squad)... this downloads once, ~260MB.")
 qa_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased-distilled-squad")
 qa_model = AutoModelForQuestionAnswering.from_pretrained("distilbert-base-cased-distilled-squad")
@@ -111,7 +90,7 @@ def answer_from_retrieved(example, retrieved_chunks):
         example["question"],
         context,
         return_tensors="pt",
-        truncation="only_second",  # never truncate the question, only the context
+        truncation="only_second", 
         max_length=384,
     )
     with torch.no_grad():
@@ -127,7 +106,7 @@ def answer_from_retrieved(example, retrieved_chunks):
     return answer.strip()
 
 
-# --- SQuAD-style normalization + EM/F1 (standard, not something to tweak) ---
+# --- SQuAD-style normalization + EM/F1 ---
 def normalize_answer(s):
     s = s.lower()
     s = "".join(ch for ch in s if ch not in set(string.punctuation))
