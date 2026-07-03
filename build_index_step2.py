@@ -1,9 +1,3 @@
-"""
-Step 2: Embeddings + retrieval.
-Builds on Step 1 (sample selection + chunking).
-For each question: embed its 10 chunks + the question, retrieve top-k by cosine
-similarity, check whether the gold chunk(s) were retrieved.
-"""
 
 from datasets import load_dataset
 from sentence_transformers import SentenceTransformer
@@ -80,7 +74,6 @@ def gold_coverage(example, retrieved_chunks):
     return len(hit), len(gold_titles), retrieved_titles, gold_titles
 
 
-# --- Sanity check on example 0 (the Corliss Archer / Shirley Temple one) ---
 ex0 = sample[0]
 print("=" * 80)
 print("RETRIEVAL CHECK — example 0")
@@ -97,7 +90,6 @@ for c in top3:
 n_hit, n_total, retrieved_titles, gold = gold_coverage(ex0, top3)
 print(f"\nGold coverage at k=3: {n_hit}/{n_total} gold chunks retrieved")
 
-# --- Run over the whole sample at k=3, report aggregate stats ---
 print("\n" + "=" * 80)
 print("AGGREGATE RETRIEVAL QUALITY over full sample, k=3")
 print("=" * 80)
